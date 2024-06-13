@@ -61,10 +61,14 @@ int main(){
                 searchRiwayatPasien();
                 break;
             case 9:
+                printf("\nJumlah data riwayat pasien: %d\n",total_records);
+                printf("Menghitung data...\n");
                 laporanPendapatan(patient_record, total_records);
                 break;
             case 10:
-                laporanPasien(patient_record, total_records);
+                printf("\nJumlah data riwayat pasien: %d\n", total_records);
+                printf("Menghitung laporan jumlah pasien...\n");
+                laporanJumlahPasien(patient_record, total_records);
                 break;
             case 11: {
                 char id[MAX_Char];
@@ -77,7 +81,6 @@ int main(){
             case 12:
                 kontrolPatient();
                 break;
-
             case 0:
                 printf("Keluar dari program.\n");
                 break;
