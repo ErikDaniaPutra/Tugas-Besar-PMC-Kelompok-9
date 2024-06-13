@@ -14,6 +14,7 @@
 #define MAX_Char 100
 #define MAX_Data 500
 #define MAX_DIAGNOSIS 50
+#define MAX_YEARS 100
 
 // Deklarasi array global untuk menyimpan data
 DataPasien patient_data[MAX_Data];
@@ -530,113 +531,195 @@ void informasiRiwayatPatient(const char* id) {
 
 
 /*Fitur nomor 4*/
+int convertDate(const char *input, char *output) {
+    int tahun, bulan, hari;
+    char bulan_str[20];
+
+    // Format: dd-mm-yyyy atau yyyy-mm-dd atau dd-MMM-yy atau dd MMMM yyyy
+    if (sscanf(input, "%d-%d-%d", &hari, &bulan, &tahun) == 3 || sscanf(input, "%d-%d-%d", &tahun, &bulan, &hari) == 3) {
+        if (tahun < 100) {
+            tahun += (tahun < 50) ? 2000 : 1900;
+        }
+        sprintf(output, "%d-%02d", tahun, bulan);
+        return 1;
+    } else if (sscanf(input, "%d %s %d", &hari, bulan_str, &tahun) == 3 || sscanf(input, "%d-%3s-%2d", &hari, bulan_str, &tahun) == 3) {
+        if (strcmp(bulan_str, "Januari") == 0 || strcmp(bulan_str, "Jan") == 0) bulan = 1;
+        else if (strcmp(bulan_str, "Februari") == 0 || strcmp(bulan_str, "Feb") == 0) bulan = 2;
+        else if (strcmp(bulan_str, "Maret") == 0 || strcmp(bulan_str, "Mar") == 0) bulan = 3;
+        else if (strcmp(bulan_str, "April") == 0 || strcmp(bulan_str, "Apr") == 0) bulan = 4;
+        else if (strcmp(bulan_str, "Mei") == 0 || strcmp(bulan_str, "Mei") == 0) bulan = 5;
+        else if (strcmp(bulan_str, "Juni") == 0 || strcmp(bulan_str, "Jun") == 0) bulan = 6;
+        else if (strcmp(bulan_str, "Juli") == 0 || strcmp(bulan_str, "Jul") == 0) bulan = 7;
+        else if (strcmp(bulan_str, "Agustus") == 0 || strcmp(bulan_str, "Agu") == 0) bulan = 8;
+        else if (strcmp(bulan_str, "September") == 0 || strcmp(bulan_str, "Sep") == 0) bulan = 9;
+        else if (strcmp(bulan_str, "Oktober") == 0 || strcmp(bulan_str, "Okt") == 0) bulan = 10;
+        else if (strcmp(bulan_str, "November") == 0 || strcmp(bulan_str, "Nov") == 0) bulan = 11;
+        else if (strcmp(bulan_str, "Desember") == 0 || strcmp(bulan_str, "Des") == 0) bulan = 12;
+
+        if (tahun < 100) {
+            tahun += (tahun < 50) ? 2000 : 1900;
+        }
+        sprintf(output, "%d-%02d", tahun, bulan);
+        return 1;
+    }
+    return 0;
+}
+
 void laporanPendapatan(RiwayatPasien riwayat[], int count) {
-    int pendapatan_bulanan[12] = {0};
-    int pendapatan_tahunan[10] = {0};
+    int pendapatan_bulanan[MAX_YEARS][12] = {0};
     int tahun_terkecil = 9999, tahun_terbesar = 0;
 
     for (int i = 0; i < count; i++) {
-        int tahun, bulan;
-        sscanf(riwayat[i].tanggal, "%d-%d", &tahun, &bulan);
-        pendapatan_bulanan[bulan - 1] += riwayat[i].biaya;
-
-        int tahun_idx = tahun - 2020;
-        if (tahun_idx >= 0 && tahun_idx < 10) {
-            pendapatan_tahunan[tahun_idx] += riwayat[i].biaya;
+        char tanggal_formatted[20];
+        if (!convertDate(riwayat[i].tanggal, tanggal_formatted)) {
+            printf("Format tanggal salah pada entri %d: %s\n", i, riwayat[i].tanggal);
+            continue;
         }
+
+        int tahun, bulan;
+        sscanf(tanggal_formatted, "%d-%d", &tahun, &bulan);
+        
+        if (tahun < 2000 || tahun >= 2000 + MAX_YEARS) {
+            printf("Tahun %d pada entri %d berada di luar cakupan yang ditangani\n", tahun, i);
+            continue;
+        }
+
+        pendapatan_bulanan[tahun - 2000][bulan - 1] += riwayat[i].biaya;
 
         if (tahun < tahun_terkecil) tahun_terkecil = tahun;
         if (tahun > tahun_terbesar) tahun_terbesar = tahun;
     }
 
     printf("Laporan Pendapatan Bulanan:\n");
-    for (int i = 0; i < 12; i++) {
-        printf("Bulan %d: Rp %d\n", i + 1, pendapatan_bulanan[i]);
+    for (int tahun = tahun_terkecil; tahun <= tahun_terbesar; tahun++) {
+        printf("Tahun %d:\n", tahun);
+        for (int bulan = 0; bulan < 12; bulan++) {
+            printf("  Bulan %d: Rp %d\n", bulan + 1, pendapatan_bulanan[tahun - 2000][bulan]);
+        }
     }
 
     printf("\nLaporan Pendapatan Tahunan:\n");
-    for (int i = tahun_terkecil; i <= tahun_terbesar; i++) {
-        int tahun_idx = i - 2020;
-        printf("Tahun %d: Rp %d\n", i, pendapatan_tahunan[tahun_idx]);
+    int total_pendapatan_tahunan = 0;
+    for (int tahun = tahun_terkecil; tahun <= tahun_terbesar; tahun++) {
+        int total_tahunan = 0;
+        for (int bulan = 0; bulan < 12; bulan++) {
+            total_tahunan += pendapatan_bulanan[tahun - 2000][bulan];
+        }
+        printf("Tahun %d: Rp %d\n", tahun, total_tahunan);
+        total_pendapatan_tahunan += total_tahunan;
     }
-
-    printf("\nRata-rata Pendapatan Tahunan:\n");
-    for (int i = tahun_terkecil; i <= tahun_terbesar; i++) {
-        int tahun_idx = i - 2020;
-        printf("Tahun %d: Rp %d\n", i, pendapatan_tahunan[tahun_idx] / 12);
+    
+    int jumlah_tahun = tahun_terbesar - tahun_terkecil + 1;
+    if (jumlah_tahun > 0) {
+        printf("Rata-rata Pendapatan Per Tahun: Rp %d\n", total_pendapatan_tahunan / jumlah_tahun);
+    } else {
+        printf("Tidak ada data tahunan yang valid\n");
     }
 }
 
 /*Fitur nomor 5*/
-void laporanPasien(RiwayatPasien riwayat_pasien[], int count) {
-    int pasien_bulanan[12] = {0};
-    int pasien_tahunan[10] = {0};  // Asumsi data dari tahun 2020 hingga 2029
-    DiagnosisCount diagnosis_bulanan[12][MAX_DIAGNOSIS] = {{{0}}};
-    DiagnosisCount diagnosis_tahunan[10][MAX_DIAGNOSIS] = {{{0}}};
-    int tahun;
-    int bulan;
-    int diagnosis_bulan_count[12] = {0};
-    int diagnosis_tahun_count[10] = {0};
-    int tahun_terkecil = 2029, tahun_terbesar = 2020;
+// Fungsi untuk mengonversi tanggal ke format "yyyy-mm"
+int convertTanggal(const char *input, char *output) {
+    int tahun, bulan, hari;
+    char bulan_str[20];
 
-    for (int i = 0; i < count; i++) {
-        sscanf(riwayat_pasien[i].tanggal, "%d-%*s-%d", &bulan, &tahun);
+    // Format: dd-MMM-yy atau dd MMMM yyyy
+    if (sscanf(input, "%d-%3s-%2d", &hari, bulan_str, &tahun) == 3) {
+        if (strcmp(bulan_str, "Jan") == 0) bulan = 1;
+        else if (strcmp(bulan_str, "Feb") == 0) bulan = 2;
+        else if (strcmp(bulan_str, "Mar") == 0) bulan = 3;
+        else if (strcmp(bulan_str, "Apr") == 0) bulan = 4;
+        else if (strcmp(bulan_str, "Mei") == 0) bulan = 5;
+        else if (strcmp(bulan_str, "Jun") == 0) bulan = 6;
+        else if (strcmp(bulan_str, "Jul") == 0) bulan = 7;
+        else if (strcmp(bulan_str, "Agu") == 0) bulan = 8;
+        else if (strcmp(bulan_str, "Sep") == 0) bulan = 9;
+        else if (strcmp(bulan_str, "Okt") == 0) bulan = 10;
+        else if (strcmp(bulan_str, "Nov") == 0) bulan = 11;
+        else if (strcmp(bulan_str, "Des") == 0) bulan = 12;
+        else return 0;
 
-        if (tahun < tahun_terkecil) tahun_terkecil = tahun;
-        if (tahun > tahun_terbesar) tahun_terbesar = tahun;
-
-        pasien_bulanan[bulan - 1]++;
-        pasien_tahunan[tahun - 2020]++;
-
-        int bulan_idx = bulan - 1;
-        int tahun_idx = tahun - 2020;
-
-        // Update diagnosis bulanan
-        int found = 0;
-        for (int j = 0; j < diagnosis_bulan_count[bulan_idx]; j++) {
-            if (strcmp(diagnosis_bulanan[bulan_idx][j].diagnosis, riwayat_pasien[i].diagnosis) == 0) {
-                diagnosis_bulanan[bulan_idx][j].jumlah++;
-                found = 1;
-                break;
-            }
+        if (tahun < 100) {
+            tahun += (tahun < 50) ? 2000 : 1900;
         }
-        if (!found) {
-            strcpy(diagnosis_bulanan[bulan_idx][diagnosis_bulan_count[bulan_idx]].diagnosis, riwayat_pasien[i].diagnosis);
-            diagnosis_bulanan[bulan_idx][diagnosis_bulan_count[bulan_idx]].jumlah = 1;
-            diagnosis_bulan_count[bulan_idx]++;
+        sprintf(output, "%d-%02d", tahun, bulan);
+        return 1;
+    } else if (sscanf(input, "%d %s %d", &hari, bulan_str, &tahun) == 3) {
+        if (strcmp(bulan_str, "Januari") == 0) bulan = 1;
+        else if (strcmp(bulan_str, "Februari") == 0) bulan = 2;
+        else if (strcmp(bulan_str, "Maret") == 0) bulan = 3;
+        else if (strcmp(bulan_str, "April") == 0) bulan = 4;
+        else if (strcmp(bulan_str, "Mei") == 0) bulan = 5;
+        else if (strcmp(bulan_str, "Juni") == 0) bulan = 6;
+        else if (strcmp(bulan_str, "Juli") == 0) bulan = 7;
+        else if (strcmp(bulan_str, "Agustus") == 0) bulan = 8;
+        else if (strcmp(bulan_str, "September") == 0) bulan = 9;
+        else if (strcmp(bulan_str, "Oktober") == 0) bulan = 10;
+        else if (strcmp(bulan_str, "November") == 0) bulan = 11;
+        else if (strcmp(bulan_str, "Desember") == 0) bulan = 12;
+        else return 0;
+
+        if (tahun < 100) {
+            tahun += (tahun < 50) ? 2000 : 1900;
+        }
+        sprintf(output, "%d-%02d", tahun, bulan);
+        return 1;
+    }
+    return 0;
+}
+
+// Fungsi untuk menghasilkan laporan jumlah pasien berdasarkan diagnosis
+void laporanJumlahPasien(RiwayatPasien riwayat[], int count) {
+    int jumlah_pasien_bulanan[MAX_YEARS][12][4] = {0}; // Maksimum 4 diagnosis
+
+    for (int i = 0; i < count; ++i) {
+        char tanggal_formatted[20];
+        if (!convertTanggal(riwayat[i].tanggal, tanggal_formatted)) {
+            printf("Format tanggal salah pada entri %d: %s\n", i, riwayat[i].tanggal);
+            continue;
         }
 
-        // Update diagnosis tahunan
-        found = 0;
-        for (int j = 0; j < diagnosis_tahun_count[tahun_idx]; j++) {
-            if (strcmp(diagnosis_tahunan[tahun_idx][j].diagnosis, riwayat_pasien[i].diagnosis) == 0) {
-                diagnosis_tahunan[tahun_idx][j].jumlah++;
-                found = 1;
-                break;
-            }
+        int tahun, bulan;
+        sscanf(tanggal_formatted, "%d-%d", &tahun, &bulan);
+
+        if (tahun < 2000 || tahun >= 2000 + MAX_YEARS) {
+            printf("Tahun %d pada entri %d berada di luar cakupan yang ditangani\n", tahun, i);
+            continue;
         }
-        if (!found) {
-            strcpy(diagnosis_tahunan[tahun_idx][diagnosis_tahun_count[tahun_idx]].diagnosis, riwayat_pasien[i].diagnosis);
-            diagnosis_tahunan[tahun_idx][diagnosis_tahun_count[tahun_idx]].jumlah = 1;
-            diagnosis_tahun_count[tahun_idx]++;
+
+        int diagnosis_index = -1;
+        if (strcmp(riwayat[i].diagnosis, "Dehidrasi") == 0) {
+            diagnosis_index = 0;
+        } else if (strcmp(riwayat[i].diagnosis, "Pusing") == 0) {
+            diagnosis_index = 1;
+        } else if (strcmp(riwayat[i].diagnosis, "Masuk Angin") == 0) {
+            diagnosis_index = 2;
+        } else if (strcmp(riwayat[i].diagnosis, "Keseleo") == 0) {
+            diagnosis_index = 3;
+        }
+
+        if (diagnosis_index != -1) {
+            jumlah_pasien_bulanan[tahun - 2000][bulan - 1][diagnosis_index]++;
+        } else {
+            printf("Diagnosis tidak dikenali pada entri %d: %s\n", i, riwayat[i].diagnosis);
+            continue;
         }
     }
 
     printf("Laporan Jumlah Pasien Bulanan:\n");
-    for (int i = 0; i < 12; i++) {
-        printf("Bulan %d: %d pasien\n", i + 1, pasien_bulanan[i]);
-        printf("Penyakit:\n");
-        for (int j = 0; j < diagnosis_bulan_count[i]; j++) {
-            printf("  %s: %d kasus\n", diagnosis_bulanan[i][j].diagnosis, diagnosis_bulanan[i][j].jumlah);
-        }
-    }
-
-    printf("\nLaporan Jumlah Pasien Tahunan:\n");
-    for (int i = tahun_terkecil; i <= tahun_terbesar; i++) {
-        printf("Tahun %d: %d pasien\n", i, pasien_tahunan[i - 2020]);
-        printf("Penyakit:\n");
-        for (int j = 0; j < diagnosis_tahun_count[i - 2020]; j++) {
-            printf("  %s: %d kasus\n", diagnosis_tahunan[i - 2020][j].diagnosis, diagnosis_tahunan[i - 2020][j].jumlah);
+    for (int tahun = 0; tahun < MAX_YEARS; tahun++) {
+        for (int bulan = 0; bulan < 12; bulan++) {
+            if (jumlah_pasien_bulanan[tahun][bulan][0] > 0 ||
+                jumlah_pasien_bulanan[tahun][bulan][1] > 0 ||
+                jumlah_pasien_bulanan[tahun][bulan][2] > 0 ||
+                jumlah_pasien_bulanan[tahun][bulan][3] > 0) {
+                printf("Tahun : %d\n", tahun + 2000);
+                printf("Bulan - %d\n", bulan + 1);
+                printf("-> Dehidrasi : %d\n", jumlah_pasien_bulanan[tahun][bulan][0]);
+                printf("-> Pusing : %d\n", jumlah_pasien_bulanan[tahun][bulan][1]);
+                printf("-> Masuk Angin : %d\n", jumlah_pasien_bulanan[tahun][bulan][2]);
+                printf("-> Keseleo : %d\n", jumlah_pasien_bulanan[tahun][bulan][3]);
+            }
         }
     }
 }
