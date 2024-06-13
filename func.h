@@ -69,10 +69,12 @@ DataPasien* cari_ID(const char* id);
 void informasiRiwayatPatient(const char* id);
 
 // Fitur 4
+int convertDate(const char *input, char *output);
 void laporanPendapatan(RiwayatPasien riwayat[], int count);
 
 // Fitur 5
-void laporanPasien(RiwayatPasien riwayat_pasien[], int count);
+int convertTanggal(const char *input, char *output);
+void laporanJumlahPasien(RiwayatPasien riwayat[], int count);
 
 // Fitur 6
 void kontrolPatient();
