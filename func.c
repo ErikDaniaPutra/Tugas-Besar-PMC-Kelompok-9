@@ -28,10 +28,10 @@ void parseCSV(){
     char buffer[512];
 
     // Membuka file CSV
-    FILE *file1 = fopen("data_pasien.csv", "r"); // open file external data_pasien.csv
+    FILE *file1 = fopen("../data/data_pasien.csv", "r"); // open file external ../data/data_pasien.csv
     if (file1 == NULL){
         printf("file 1 not found.");
-    }
+    } 
 
     // Bagian parsing file CSV
     fgets(buffer, sizeof(buffer), file1); // Membaca baris pertama teks dari file1
@@ -68,7 +68,7 @@ void parseCSV(){
     fclose(file1);
 
         
-    FILE *file2 = fopen("riwayat_pasien.csv", "r"); // open file external riwayat_pasien.csv
+    FILE *file2 = fopen("../data/riwayat_pasien.csv", "r"); // open file external ../data/riwayat_pasien.csv
         if (file2 == NULL){
         printf("file 2 not found.");
     }
@@ -104,7 +104,7 @@ void parseCSV(){
 
 /*Fitur nomor 1*/
 void writePatient() {
-    FILE *file1 = fopen("data_pasien.csv", "w");
+    FILE *file1 = fopen("../data/data_pasien.csv", "w");
     if (file1 == NULL) {
         printf("File 1 not found.\n");
         return;
@@ -265,7 +265,7 @@ void findDataPasien(DataPasien patient_data[], int count) {
 /*Fitur nomor 2*/
 // Fungsi menambahkan data pada daftar riwayat pasien (add, update, delete)
 void writeRecords() {
-    FILE *file2 = fopen("riwayat_pasien.csv", "w");
+    FILE *file2 = fopen("../data/riwayat_pasien.csv", "w");
     if (file2 == NULL) {
         printf("File 2 not found.\n");
         return;
@@ -419,8 +419,8 @@ void updateRiwayatPasien() {
 // Fungsi delete riwayat pasien dengan akses id pasien
 void deleteRiwayatPasien() {
     char id[20];
-    printf("Masukkan ID pasien: ");
-    scanf(" %[^\n]", id);
+    printf("Masukkan ID pasien: "); 
+    scanf(" %[^\n]", id);          //<-------------- input
     int found = 0;
     printf("Pilih nomor urut rekam medis pasien:\n");
     for (int i = 0; i < total_records; i++) {
@@ -437,7 +437,7 @@ void deleteRiwayatPasien() {
     }
     printf("Masukkan nomor urut rekam medis pasien: ");
     int k; //recordNumber
-    scanf("%d", &k);
+    scanf("%d", &k);                  // <------------------ input
     if (k < 1 || k > total_records) {
         printf("Nomor urut rekam medis tidak valid.\n");
         return;
