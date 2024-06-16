@@ -26,9 +26,9 @@ int main(){
         printf("6. Update Medical Record\n");
         printf("7. Delete Medical Record\n");
         printf("8. Search Medical Record\n");
-        printf("9. Laporan Pendapatan\n");
-        printf("10. Laporan Pasien\n");
-        printf("11. Cari Informasi dan Riwayat Pasien\n");
+        printf("9. Cari Informasi dan Riwayat Pasien\n");
+        printf("10. Laporan Pendapatan\n");
+        printf("11. Laporan Pasien\n");
         printf("12. Lihat Pasien untuk Kontrol\n");
         printf("0. Keluar\n");
         printf("Masukkan pilihan: ");
@@ -61,26 +61,29 @@ int main(){
                 searchRiwayatPasien();
                 break;
             case 9:
-                printf("\nJumlah data riwayat pasien: %d\n",total_records);
-                printf("Menghitung data...\n");
-                laporanPendapatan(patient_record, total_records);
-                break;
-            case 10:
-                printf("\nJumlah data riwayat pasien: %d\n", total_records);
-                printf("Menghitung laporan jumlah pasien...\n");
-                laporanJumlahPasien(patient_record, total_records);
-                break;
-            case 11: {
                 char id[MAX_Char];
                 printf("Masukkan ID Pasien: ");
                 fgets(id, MAX_Char, stdin);
                 strtok(id, "\n");
                 informasiRiwayatPatient(id);
                 break;
+
+            case 10:
+                printf("\nJumlah data riwayat pasien: %d\n",total_records);
+                printf("Menghitung data...\n");
+                laporanPendapatan(patient_record, total_records);
+                break;
+
+            case 11: {
+                printf("\nJumlah data riwayat pasien: %d\n", total_records);
+                printf("Menghitung laporan jumlah pasien...\n");
+                laporanJumlahPasien(patient_record, total_records);
+                break;
             }
             case 12:
                 kontrolPatient();
                 break;
+
             case 0:
                 printf("Keluar dari program.\n");
                 break;
